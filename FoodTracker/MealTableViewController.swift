@@ -28,9 +28,14 @@ class MealTableViewController: UITableViewController {
         //add edit button
         navigationItem.leftBarButtonItem = editButtonItem()
         
+        //load any saved meals, otherwise load sample data
+        if let savedMeals = loadMeals() {
+            meals += savedMeals
+        } else {
+        
         //Load sample meal data
         loadSampleMeals()
-
+        }
     }
 
     func loadSampleMeals() {
@@ -93,6 +98,9 @@ class MealTableViewController: UITableViewController {
                 
                 tableView.insertRowsAtIndexPaths([newIndexPath], withRowAnimation: .Bottom)
             }
+            
+            //Save meals
+            saveMeals()
         }
     }
     
@@ -110,6 +118,8 @@ class MealTableViewController: UITableViewController {
             
             // Delete the row from the data source
             meals.removeAtIndex(indexPath.row)
+            saveMeals()
+            
             tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
             
         } else if editingStyle == .Insert {
@@ -159,6 +169,26 @@ class MealTableViewController: UITableViewController {
             }
         }
     }
+    
+    // MARK: NSCoding
+    
+    func saveMeals() {
+        
+        let isSuccessfulSave = NSKeyedArchiver.archiveRootObject(meals, toFile: Meal.ArchiveURL.path!)
+        
+        if !isSuccessfulSave {
+            print("Failed to save meals...")
+        }
+        
+    }
+    
+    //This method has a return type of an optional array of Meal objects, meaning that it might return an array of Meal objects or might return nothing (nil).
+    func loadMeals() -> [Meal]? {
+        
+        return NSKeyedUnarchiver.unarchiveObjectWithFile(Meal.ArchiveURL.path!) as? [Meal]
+    }
+    
+    
     
 
 }
